@@ -9,6 +9,7 @@ morgan.token('body', (req, res) => JSON.stringify(req.body)); // Ovako se defini
 app.use(morgan('tiny'), morgan(':body'));
 // app.use(morgan(':body'));
 app.use(cors());
+app.use(express.static('build'));
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'Unknown endpoint' })

@@ -3,13 +3,13 @@ const cors = require('cors');
 var morgan = require('morgan');
 const app = express();
 
-// To access the data easily, we need the help of the express json-parser that is taken to use with command app.use(express.json())
-app.use(express.json());
-morgan.token('body', (req, res) => JSON.stringify(req.body)); // Ovako se definira token naziva 'body'
-app.use(morgan('tiny'), morgan(':body'));
-// app.use(morgan(':body'));
 app.use(cors());
 app.use(express.static('build'));
+morgan.token('body', (req, res) => JSON.stringify(req.body)); // Ovako se definira token naziva 'body'
+app.use(morgan('tiny'), morgan(':body'));
+
+// To access the data easily, we need the help of the express json-parser that is taken to use with command app.use(express.json())
+app.use(express.json());
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'Unknown endpoint' })

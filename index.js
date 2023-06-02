@@ -1,26 +1,28 @@
 const express = require('express');
+const cors = require('cors');
 var morgan = require('morgan');
 const app = express();
 
 // To access the data easily, we need the help of the express json-parser that is taken to use with command app.use(express.json())
 app.use(express.json());
 morgan.token('body', (req, res) => JSON.stringify(req.body)); // Ovako se definira token naziva 'body'
-app.use(morgan(':method :url :status :res[content-length] :body - :response-time ms'));
-// app.use(morgan('tiny'));
+app.use(morgan('tiny'), morgan(':body'));
+// app.use(morgan(':body'));
+app.use(cors());
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'Unknown endpoint' })
 }
 
 let persons = [
-    { 
+    {
       "id": 1,
-      "name": "Arto Hellas", 
+      "name": "Arto Hellas",
       "number": "040-123456"
     },
-    { 
+    {
       "id": 2,
-      "name": "Ada Lovelace", 
+      "name": "Ada Lovelace",
       "number": "39-44-5323523"
     },
     { 
@@ -65,11 +67,11 @@ app.post('/api/persons', (request, response) => {
   const newPerson = {
     id: randomId,
   }
-  if (!reqBody.name || !reqBody.name.length > 0) {
+  if (!reqBody.name || !reqBody.name.trim().length > 0) {
     response.status(400).json({
       error: "Name didn't provided"
     });
-  } else if (!reqBody.number || !reqBody.number.length > 0) {
+  } else if (!reqBody.number || !reqBody.number.trim().length > 0) {
     response.status(400).json({
       error: "Number didn't provided"
     });

@@ -6,7 +6,7 @@ const app = express();
 app.use(cors());
 app.use(express.static('build'));
 morgan.token('body', (req, res) => JSON.stringify(req.body)); // Ovako se definira token naziva 'body'
-app.use(morgan('tiny :body'));
+app.use(morgan('tiny'), morgan(':body'));
 
 // To access the data easily, we need the help of the express json-parser that is taken to use with command app.use(express.json())
 app.use(express.json());

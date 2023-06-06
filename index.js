@@ -1,7 +1,9 @@
+require('dotenv').config()
 const express = require('express');
 const cors = require('cors');
 var morgan = require('morgan');
 const app = express();
+const PhonebookEntry = require('./models/phonebookEntry');
 
 app.use(cors());
 app.use(express.static('build'));
@@ -39,7 +41,9 @@ let persons = [
 ];
 
 app.get('/api/persons', (request, response) => {
-    response.json(persons);
+    PhonebookEntry.find({}).then(phonebook => {
+      response.json(phonebook);
+    })
 });
 app.get('/api/info', (request, response) => {
     const currentTime = new Date();

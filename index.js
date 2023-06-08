@@ -61,10 +61,13 @@ app.get('/api/persons/:id', (request, response) => {
         response.status(404).send(`Person with id ${requestedPersonId} doesn't exist.`)
     }
 });
-app.delete('/api/persons/:id', (request, response) => {
-    const idPersonToDelete = Number(request.params.id);
-    persons = persons.filter(person => person.id !== idPersonToDelete);
-    response.status(204).end();
+app.delete('/api/persons/:id', (request, response, next) => {
+    PhonebookEntry.findByIdAndRemove(request.params.id)
+      .then(result => {
+        console.log(result);
+        response.status(204).end()
+      })
+      .catch(error => next(error))
 });
 app.post('/api/persons', (request, response) => {
   const reqBody = request.body;
@@ -76,6 +79,10 @@ app.post('/api/persons', (request, response) => {
     response.status(400).json({
       error: "Number didn't provided"
     });
+  // } else if (persons.find(person => person.name === reqBody.name)) {
+  //   response.status(400).json({
+  //     error: "The name must be unique"
+  //   });
   } else {
     const newPerson = new PhonebookEntry({
       name: reqBody.name,

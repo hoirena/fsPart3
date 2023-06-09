@@ -65,7 +65,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
       })
       .catch(error => next(error))
 });
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const reqBody = request.body;
   if (!reqBody.name || !reqBody.name.trim().length > 0) {
     response.status(400).json({
@@ -75,17 +75,23 @@ app.post('/api/persons', (request, response) => {
     response.status(400).json({
       error: "Number didn't provided"
     });
-  // } else if (persons.find(person => person.name === reqBody.name)) {
-  //   response.status(400).json({
-  //     error: "The name must be unique"
-  //   });
-  } else {
-    const newPerson = new PhonebookEntry({
-      name: reqBody.name,
-      number: reqBody.number,
-    })
-    newPerson.save().then(savedPerson => response.json(savedPerson))
+} else {
+  const newPerson = new PhonebookEntry({
+    name: reqBody.name,
+    number: reqBody.number,
+  })
+  newPerson.save().then(savedPerson => response.json(savedPerson))
   }
+});
+app.put('/api/persons/:id', (request, response, next) => {
+  const requestedPersonId = request.params.id;
+  const changedPerson = {
+    name: request.body.name,
+    number: request.body.number,
+  }
+  PhonebookEntry.findByIdAndUpdate(requestedPersonId, changedPerson, { new: true })
+    .then(updatedPerson => response.json(updatedPerson))
+    .catch(error => next(error))
 });
 
 const unknownEndpoint = (request, response) => {

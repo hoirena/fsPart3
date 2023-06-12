@@ -43,19 +43,20 @@ app.get('/api/persons', (request, response) => {
 });
 app.get('/api/info', (request, response) => {
     const currentTime = new Date();
-    response.send(`
-        <p>Phonebook has info for ${persons.length} people.</p>
-        <p>${currentTime}</p>
-    `);
+    PhonebookEntry.count({})
+      .then(result => {
+        response.send(`
+            <p>Phonebook has info for ${result} people.</p>
+            <p>${currentTime}</p>
+        `);
+      })
+      .catch(error => next(error))
 });
-app.get('/api/persons/:id', (request, response) => {
-    const requestedPersonId = Number(request.params.id);
-    const requestedPerson = persons.find(person => person.id === requestedPersonId)
-    if (requestedPerson) {
-        response.json(requestedPerson);
-    } else {
-        response.status(404).send(`Person with id ${requestedPersonId} doesn't exist.`)
-    }
+app.get('/api/persons/:id', (request, response, next) => {
+    const requestedPersonId = request.params.id;
+    PhonebookEntry.findById(requestedPersonId)
+      .then(result => response.json(result))
+      .catch(error => next(error))
 });
 app.delete('/api/persons/:id', (request, response, next) => {
     PhonebookEntry.findByIdAndRemove(request.params.id)
@@ -65,7 +66,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
       })
       .catch(error => next(error))
 });
-app.post('/api/persons', (request, response, next) => {
+app.post('/api/persons', (request, response) => {
   const reqBody = request.body;
   if (!reqBody.name || !reqBody.name.trim().length > 0) {
     response.status(400).json({

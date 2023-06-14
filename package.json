@@ -7,7 +7,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:ui": "rm -rf build && cd ../fsPart2/phonebook && npm run build && cp -r build ../../fsPart3",
+    "build:ui": "@powershell Remove-Item -Recurse -Force build && cd ../fsPart2/phonebook && npm run build && @powershell Copy-Item build -Recurse ../../fsPart3",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push origin main"
   },
   "author": "",

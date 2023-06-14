@@ -7,34 +7,12 @@ const PhonebookEntry = require('./models/phonebookEntry');
 
 app.use(cors());
 app.use(express.static('build'));
-morgan.token('body', (req, res) => JSON.stringify(req.body)); // Ovako se definira token naziva 'body'
-app.use(morgan('tiny'), morgan(':body'));
 
 // To access the data easily, we need the help of the express json-parser that is taken to use with command app.use(express.json())
 app.use(express.json());
 
-let persons = [
-    {
-      "id": 1,
-      "name": "Arto Hellas",
-      "number": "040-123456"
-    },
-    {
-      "id": 2,
-      "name": "Ada Lovelace",
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": 3,
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": 4,
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-];
+morgan.token('body', (req, res) => JSON.stringify(req.body)); // Ovako se definira token naziva 'body'
+app.use(morgan('tiny'), morgan(':body'));
 
 app.get('/api/persons', (request, response) => {
     PhonebookEntry.find({}).then(phonebook => {
@@ -66,23 +44,26 @@ app.delete('/api/persons/:id', (request, response, next) => {
       })
       .catch(error => next(error))
 });
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const reqBody = request.body;
-  if (!reqBody.name || !reqBody.name.trim().length > 0) {
+  if (!reqBody.name || reqBody.name.trim().length === 0) {
     response.status(400).json({
       error: "Name didn't provided"
-    });
-  } else if (!reqBody.number || !reqBody.number.trim().length > 0) {
+    }).end();
+  } else if (!reqBody.number || reqBody.number.trim().length === 0) {
     response.status(400).json({
       error: "Number didn't provided"
-    });
-} else {
+    }).end();
+}
   const newPerson = new PhonebookEntry({
     name: reqBody.name,
     number: reqBody.number,
   })
-  newPerson.save().then(savedPerson => response.json(savedPerson))
-  }
+  newPerson.save()
+    .then((savedPerson) => {
+      return response.json(savedPerson)
+    })
+    .catch(error => next(error));
 });
 app.put('/api/persons/:id', (request, response, next) => {
   const requestedPersonId = request.params.id;
@@ -90,7 +71,11 @@ app.put('/api/persons/:id', (request, response, next) => {
     name: request.body.name,
     number: request.body.number,
   }
-  PhonebookEntry.findByIdAndUpdate(requestedPersonId, changedPerson, { new: true })
+  PhonebookEntry.findByIdAndUpdate(
+      requestedPersonId,
+      changedPerson,
+      { new: true, runValidators: true, context: 'query' }
+    )
     .then(updatedPerson => response.json(updatedPerson))
     .catch(error => next(error))
 });
@@ -105,6 +90,8 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id'})
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
   }
   next(error)
 }

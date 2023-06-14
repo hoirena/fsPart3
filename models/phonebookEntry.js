@@ -16,7 +16,18 @@ const phonebookEntrySchema = new mongoose.Schema({
         required: true,
         trim: true,
     },
-    number: String,
+    number: {
+        type: String,
+        minLength: 8,
+        required: true,
+        trim: true,
+        validate: {
+            validator: function(phoneNumber) {
+                return /^(\d{2}|\d{3})-\d+$/.test(phoneNumber)
+            },
+            message: props => `${props.value} does not fit proper phone number formate (00-00000... or 000-00000...)`
+        }
+    },
 });
 phonebookEntrySchema.set('toJSON', {
     transform: (document, returnedObj) => {
